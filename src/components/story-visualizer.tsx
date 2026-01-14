@@ -149,16 +149,3 @@ export function StoryVisualizer({ story, onNodeClick }: StoryVisualizerProps) {
     </ScrollArea>
   );
 }
-
-// Add this to a global css file or style tag if not present
-const style = document.createElement('style');
-style.innerHTML = `
-.truncate-3-lines {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-}
-`;
-document.head.appendChild(style);

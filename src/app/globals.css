@@ -74,3 +74,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .truncate-3-lines {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+}
