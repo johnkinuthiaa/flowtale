@@ -14,7 +14,6 @@ import { Loader2, ArrowLeft, Share2, Download, Users } from 'lucide-react';
 import { StoryVisualizer } from '@/components/story-visualizer';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
 
 export default function StoryPage() {
@@ -227,16 +226,12 @@ export default function StoryPage() {
           </Card>
         </div>
         <div className="lg:col-span-2 lg:sticky top-20">
-          <div className="space-y-6">
-            <Card className="h-[75vh] w-full">
-              <CardHeader>
-                <CardTitle className="font-headline">Your Narrative Map</CardTitle>
-                <CardDescription>Click a node to revisit that part of the story.</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[calc(100%-8rem)]">
-                <StoryVisualizer story={story} onNodeClick={handleNodeClick} />
-              </CardContent>
-            </Card>
+          <div className="space-y-4">
+            <h3 className="font-headline text-2xl">Your Narrative Map</h3>
+            <p className="text-muted-foreground">Click a node to revisit that part of the story.</p>
+            <div className="h-[60vh] w-full">
+              <StoryVisualizer story={story} onNodeClick={handleNodeClick} />
+            </div>
           </div>
         </div>
       </div>
