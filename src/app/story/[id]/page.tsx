@@ -119,7 +119,7 @@ export default function StoryPage() {
                           onClick={() => handleChoice(choice)}
                           disabled={isLoading}
                           variant="outline"
-                          className="text-left justify-start h-auto py-3"
+                          className="text-left justify-start h-auto py-3 whitespace-normal"
                           >
                           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                           {choice}
