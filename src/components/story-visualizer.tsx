@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo } from 'react';
@@ -17,10 +18,10 @@ interface NodePosition {
   id: string;
 }
 
-const NODE_WIDTH = 180;
-const NODE_HEIGHT = 80;
-const H_GAP = 60;
-const V_GAP = 60;
+const NODE_WIDTH = 150;
+const NODE_HEIGHT = 70;
+const H_GAP = 30;
+const V_GAP = 50;
 
 export function StoryVisualizer({ story, onNodeClick }: StoryVisualizerProps) {
   const { positions, edges, width, height } = useMemo(() => {
@@ -28,90 +29,123 @@ export function StoryVisualizer({ story, onNodeClick }: StoryVisualizerProps) {
 
     const positions = new Map<string, NodePosition>();
     const edges: { from: NodePosition; to: NodePosition }[] = [];
-    const childrenMap = new Map<string, string[]>();
-    const depthMap = new Map<string, number>();
-    const levelMap = new Map<number, string[]>();
-
+    
+    const hierarchy = new Map<string, string[]>();
     Object.values(story.nodes).forEach(node => {
-        if(node.parentId) {
-            if(!childrenMap.has(node.parentId)) childrenMap.set(node.parentId, []);
-            childrenMap.get(node.parentId)!.push(node.id);
-        }
+        const parentId = node.parentId || 'root';
+        if (!hierarchy.has(parentId)) hierarchy.set(parentId, []);
+        if (node.parentId) hierarchy.get(parentId)!.push(node.id);
     });
 
-    const traverse = (nodeId: string, depth: number) => {
-        depthMap.set(nodeId, depth);
-        if(!levelMap.has(depth)) levelMap.set(depth, []);
-        levelMap.get(depth)!.push(nodeId);
+    const levelWidths = new Map<number, number>();
+    const nodeDepths = new Map<string, number>();
 
-        const children = childrenMap.get(nodeId) || [];
-        children.forEach(childId => traverse(childId, depth + 1));
-    }
-    
-    traverse(story.rootNodeId, 0);
-    
-    let maxWidth = 0;
-    let maxHeight = 0;
-
-    levelMap.forEach((nodesAtLevel, depth) => {
-        const levelWidth = nodesAtLevel.length * (NODE_WIDTH + H_GAP) - H_GAP;
-        nodesAtLevel.forEach((nodeId, index) => {
-            const x = (index * (NODE_WIDTH + H_GAP)) - levelWidth / 2;
-            const y = depth * (NODE_HEIGHT + V_GAP);
-            positions.set(nodeId, { id: nodeId, x, y });
-            maxWidth = Math.max(maxWidth, Math.abs(x) * 2 + NODE_WIDTH);
-            maxHeight = Math.max(maxHeight, y + NODE_HEIGHT);
+    function calculateWidths(nodeId: string, depth: number) {
+        nodeDepths.set(nodeId, depth);
+        const children = hierarchy.get(nodeId) || [];
+        if (children.length === 0) {
+            levelWidths.set(depth, (levelWidths.get(depth) || 0) + 1);
+            return 1;
+        }
+        let width = 0;
+        children.forEach(childId => {
+            width += calculateWidths(childId, depth + 1);
         });
+        return width;
+    }
+
+    calculateWidths(story.rootNodeId, 0);
+    levelWidths.set(0, 1);
+
+
+    const maxNodesAtDepth = Math.max(...Array.from(levelWidths.values()));
+    const totalWidth = maxNodesAtDepth * (NODE_WIDTH + H_GAP) - H_GAP;
+
+    const levelPositions = new Map<number, number>();
+
+    function positionNodes(nodeId: string | null, depth: number, xOffset: number) {
+        if (!nodeId) return;
+
+        const children = hierarchy.get(nodeId) || [];
+        const childrenWidth = children.reduce((sum, childId) => sum + (levelWidths.get(nodeDepths.get(childId)!) || 0), 0);
+        
+        let currentX = xOffset - (childrenWidth * (NODE_WIDTH + H_GAP))/2;
+
+        const y = depth * (NODE_HEIGHT + V_GAP);
+        positions.set(nodeId, { id: nodeId, x: xOffset, y });
+
+        children.forEach(childId => {
+            const childWidth = levelWidths.get(nodeDepths.get(childId)!) || 1;
+            const childXOffset = currentX + (childWidth * (NODE_WIDTH + H_GAP))/2;
+            positionNodes(childId, depth + 1, childXOffset);
+            currentX += childWidth * (NODE_WIDTH + H_GAP);
+        });
+    }
+
+    positionNodes(story.rootNodeId, 0, 0);
+
+
+    let minX = Infinity, maxX = -Infinity, maxY = -Infinity;
+    positions.forEach(pos => {
+      minX = Math.min(minX, pos.x);
+      maxX = Math.max(maxX, pos.x);
+      maxY = Math.max(maxY, pos.y);
     });
 
-    Object.values(story.nodes).forEach(node => {
-        if (node.parentId && positions.has(node.id) && positions.has(node.parentId)) {
-            edges.push({
-                from: positions.get(node.parentId)!,
-                to: positions.get(node.id)!,
-            });
-        }
+    const calculatedWidth = maxX - minX + NODE_WIDTH;
+    const calculatedHeight = maxY + NODE_HEIGHT;
+    
+    const xTranslation = Math.abs(minX) + NODE_WIDTH/2;
+
+    positions.forEach(pos => {
+        edges.push(
+            ...((hierarchy.get(pos.id) || []).map(childId => ({
+                from: pos,
+                to: positions.get(childId)!
+            })))
+        );
     });
 
-    return { positions, edges, width: maxWidth, height: maxHeight };
+
+    return { positions, edges, width: calculatedWidth, height: calculatedHeight };
   }, [story]);
 
   if (!story) return null;
 
   return (
     <ScrollArea className="w-full h-full bg-secondary/30 rounded-lg border">
-        <div className="p-4" style={{ width: Math.max(width, 600), height: Math.max(height, 400) }}>
-            <svg width={width} height={height} className="absolute top-0 left-0">
-                <defs>
-                    <marker
-                        id="arrow"
-                        viewBox="0 0 10 10"
-                        refX="8"
-                        refY="5"
-                        markerWidth="6"
-                        markerHeight="6"
-                        orient="auto-start-reverse">
-                        <path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--border))" />
-                    </marker>
-                </defs>
-                <g transform={`translate(${width / 2}, ${V_GAP})`}>
-                {edges.map(({ from, to }, i) => (
-                    <motion.path
-                        key={i}
-                        d={`M ${from.x + NODE_WIDTH / 2} ${from.y + NODE_HEIGHT} C ${from.x + NODE_WIDTH / 2} ${from.y + NODE_HEIGHT + V_GAP/2}, ${to.x + NODE_WIDTH / 2} ${to.y - V_GAP/2}, ${to.x + NODE_WIDTH / 2} ${to.y}`}
-                        fill="none"
-                        stroke="hsl(var(--border))"
-                        strokeWidth="2"
-                        markerEnd="url(#arrow)"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{ duration: 0.5, delay: 0.2 + i * 0.05 }}
-                    />
-                ))}
-                </g>
-            </svg>
-             <div className="relative" style={{ width, height }}>
-                <div style={{ transform: `translate(${width / 2}px, ${V_GAP}px)` }}>
+        <div className="flex items-center justify-center p-4 min-h-full">
+            <div className="relative" style={{ width, height }}>
+                <svg width={width} height={height} className="absolute top-0 left-0">
+                    <defs>
+                        <marker
+                            id="arrow"
+                            viewBox="0 0 10 10"
+                            refX="8"
+                            refY="5"
+                            markerWidth="6"
+                            markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="hsl(var(--border))" />
+                        </marker>
+                    </defs>
+                    <g>
+                    {edges.map(({ from, to }, i) => (
+                        <motion.path
+                            key={i}
+                            d={`M ${from.x + NODE_WIDTH / 2} ${from.y + NODE_HEIGHT} C ${from.x + NODE_WIDTH / 2} ${from.y + NODE_HEIGHT + V_GAP/2}, ${to.x + NODE_WIDTH / 2} ${to.y - V_GAP/2}, ${to.x + NODE_WIDTH / 2} ${to.y}`}
+                            fill="none"
+                            stroke="hsl(var(--border))"
+                            strokeWidth="2"
+                            markerEnd="url(#arrow)"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            animate={{ pathLength: 1, opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.2 + i * 0.05 }}
+                        />
+                    ))}
+                    </g>
+                </svg>
+                <div className="relative w-full h-full">
                     <AnimatePresence>
                         {Array.from(positions.values()).map((pos, i) => (
                         <motion.div
@@ -147,7 +181,6 @@ export function StoryVisualizer({ story, onNodeClick }: StoryVisualizerProps) {
             </div>
         </div>
       <ScrollBar orientation="horizontal" />
-      <ScrollBar orientation="vertical" />
     </ScrollArea>
   );
 }
