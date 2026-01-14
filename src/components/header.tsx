@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Header() {
@@ -26,8 +26,10 @@ export function Header() {
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center">
-            <Button asChild>
-              <Link href="/create">Create Story</Link>
+            <Button asChild variant="ghost" size="icon">
+              <a href="https://github.com/your-repo" target="_blank" rel="noopener noreferrer" aria-label="GitHub Repository">
+                <Github className="h-5 w-5" />
+              </a>
             </Button>
           </nav>
         </div>
