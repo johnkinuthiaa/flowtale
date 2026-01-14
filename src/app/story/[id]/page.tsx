@@ -20,6 +20,7 @@ export default function StoryPage() {
   
   const [story, setStory] = useState<Story | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const storyId = Array.isArray(params.id) ? params.id[0] : params.id;
 
   // This is a workaround to get the latest story state from context
@@ -36,6 +37,11 @@ export default function StoryPage() {
     return story.nodes[story.currentNodeId];
   }, [story]);
 
+  useEffect(() => {
+    // Reset selected choice when the current node changes
+    setSelectedChoice(null);
+  }, [currentNode?.id]);
+
   if (!story || !currentNode) {
     return (
       <div className="flex h-[calc(100vh-3.5rem)] items-center justify-center text-muted-foreground">
@@ -46,6 +52,7 @@ export default function StoryPage() {
   }
 
   const handleChoice = async (choice: string) => {
+    setSelectedChoice(choice);
     setIsLoading(true);
     try {
       const result = await continueStory(story, choice);
@@ -69,6 +76,7 @@ export default function StoryPage() {
       });
     } finally {
       setIsLoading(false);
+      // The selectedChoice will be reset by the useEffect when currentNode changes
     }
   };
 
@@ -113,18 +121,22 @@ export default function StoryPage() {
                   <CardFooter className="flex-col items-start gap-4">
                       <h3 className="font-bold text-lg font-headline">What do you do next?</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                      {currentNode.branchingPaths.length > 0 ? currentNode.branchingPaths.map((choice, index) => (
-                          <Button
-                          key={index}
-                          onClick={() => handleChoice(choice)}
-                          disabled={isLoading}
-                          variant="outline"
-                          className="text-left justify-start h-auto py-3 whitespace-normal"
-                          >
-                          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          {choice}
-                          </Button>
-                      )) : (
+                      {currentNode.branchingPaths.length > 0 ? currentNode.branchingPaths.map((choice, index) => {
+                        const isSelected = selectedChoice === choice;
+                        return (
+                          <motion.div key={index} whileTap={{ scale: 0.98 }}>
+                            <Button
+                              onClick={() => handleChoice(choice)}
+                              disabled={isLoading}
+                              variant={isSelected ? "default" : "outline"}
+                              className="text-left justify-start h-auto py-3 whitespace-normal w-full"
+                            >
+                              {isLoading && isSelected && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                              {choice}
+                            </Button>
+                          </motion.div>
+                        )
+                       }) : (
                           <p className="text-muted-foreground">The path ends here... for now.</p>
                       )}
                       </div>
