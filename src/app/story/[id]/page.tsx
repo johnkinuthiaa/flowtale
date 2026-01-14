@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { continueStory } from '@/lib/actions';
-import { Loader2, ArrowLeft, GitBranch, BookText } from 'lucide-radix';
+import { Loader2, ArrowLeft, GitBranch, BookText } from 'lucide-react';
 import { StoryVisualizer } from '@/components/story-visualizer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimatePresence, motion } from 'framer-motion';
