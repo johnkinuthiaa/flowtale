@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -8,6 +9,7 @@ import { useStory } from "@/lib/story-context";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { ArrowRight, BookCopy, PenSquare, GitMerge, Star, Users, Download, BotMessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function Home() {
   const { stories } = useStory();
@@ -18,13 +20,17 @@ export default function Home() {
     setIsClient(true);
   }, []);
 
-
   const communityStats = [
     { name: "Stories Created", value: isClient ? stories.length : 0, icon: BookCopy },
     { name: "Community Stars", value: "1.2k", icon: Star },
     { name: "Active Contributors", value: "24", icon: Users },
     { name: "AI Invocations", value: "10k+", icon: BotMessageSquare },
   ];
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -92,27 +98,38 @@ export default function Home() {
             </div>
           </div>
           {isClient && stories.length > 0 ? (
-            <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 sm:grid-cols-2 lg:grid-cols-3">
-              {stories.slice(0, 3).map((story) => (
-                <Card key={story.id} className="hover:shadow-lg transition-shadow bg-card/80 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="font-headline flex items-center gap-2">
-                      <BookCopy className="w-5 h-5 text-primary" />
-                      {story.title}
-                    </CardTitle>
-                    <CardDescription>Genre: {story.genre}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {Object.keys(story.nodes).length} parts explored.
-                    </p>
-                    <Button asChild variant="outline" className="w-full">
-                      <Link href={`/story/${story.id}`}>
-                        Continue Story <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
+            <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 py-12 sm:grid-cols-2 lg:grid-cols-3">
+              {stories.slice(0, 3).map((story, i) => (
+                <motion.div
+                  key={story.id}
+                  variants={cardVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <Card className="h-full flex flex-col group overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:shadow-primary/10 hover:border-primary/30 hover:-translate-y-1 bg-card/80 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="font-headline flex items-center gap-2">
+                        <BookCopy className="w-5 h-5 text-primary" />
+                        {story.title}
+                      </CardTitle>
+                      <CardDescription>Genre: {story.genre}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-grow flex flex-col justify-between">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {Object.keys(story.nodes).length} parts explored.
+                      </p>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button asChild variant="outline" size="sm" className="w-full sm:w-auto sm:px-4 md:w-full">
+                          <Link href={`/story/${story.id}`}>
+                            Continue Story <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                          </Link>
+                        </Button>
+                      </motion.div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
             </div>
           ) : isClient ? (
