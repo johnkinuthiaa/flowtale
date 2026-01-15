@@ -63,23 +63,11 @@ export default function Home() {
                 </Link>
               </Button>
               <Button size="lg" variant="secondary" asChild>
-                <Link href="#about">
+                <Link href="/about">
                   Learn More <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section id="about" className="w-full py-16 md:py-24 lg:py-32">
-        <div className="container px-4 md:px-6">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-4xl">What is StoryForge?</h2>
-            <p className="mt-4 text-muted-foreground md:text-lg">
-              It's an interactive storytelling platform where you are the author. Start with a simple prompt and watch as our AI co-writer helps you build a unique world, one choice at a time. Explore infinite possibilities and see where your imagination takes you.
-            </p>
           </div>
         </div>
       </section>
