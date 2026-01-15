@@ -5,8 +5,8 @@ import { AppProviders } from './providers';
 import { Header } from '@/components/header';
 
 export const metadata: Metadata = {
-  title: 'Branching Narratives',
-  description: 'An interactive storytelling game where your choices shape the plot.',
+  title: 'StoryForge',
+  description: 'An interactive storytelling game where your choices shape the plot, powered by AI.',
 };
 
 export default function RootLayout({
