@@ -32,8 +32,8 @@ Follow these instructions to get a local copy up and running for development and
 
 1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/bethwel3001/storyforge.git
-    cd storyforge
+    git clone https://github.com/bethwel3001/flowtale.git
+    cd flowtale
     ```
 
 2.  **Install dependencies:**

@@ -178,7 +178,7 @@ export default function Home() {
           </div>
           <div className="text-center">
             <Button asChild size="lg">
-              <a href="https://github.com/bethwel3001/storyforge" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/bethwel3001/flowtale" target="_blank" rel="noopener noreferrer">
                 <GitMerge className="mr-2 h-5 w-5" />
                 Contribute on GitHub
               </a>
